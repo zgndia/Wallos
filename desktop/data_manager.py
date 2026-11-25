@@ -13,8 +13,12 @@ import time
 from pathlib import Path
 from contextlib import contextmanager
 
-# Paths - use relative to wallos root
-WALLOS_ROOT = Path(__file__).parent.parent
+# Paths - import from package init to work correctly in PyInstaller bundles
+try:
+    from . import WALLOS_ROOT
+except ImportError:
+    # Fallback when run as script
+    WALLOS_ROOT = Path(__file__).parent.parent
 DB_PATH = WALLOS_ROOT / "app" / "db" / "wallos.db"
 LOGOS_DIR = WALLOS_ROOT / "app" / "images" / "uploads" / "logos"
 BACKUP_DIR = Path("C:/Users/zgn/wallos-data-backup-20261125-183258")

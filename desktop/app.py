@@ -95,6 +95,7 @@ def _log(msg: str, level="INFO"):
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     with open(log_file, "a", encoding="utf-8") as f:
         f.write(f"[{timestamp}] [{level}] {msg}\n")
+        f.flush()
 
 
 def _load_settings():
@@ -526,7 +527,9 @@ def main():
         try:
             from desktop import php_server
             port = php_server.start_php_server()
-            # Start health check thread in php_server (non-blocking); we don't block here
+            # Set the port in php_server module so navigate_when_ready() can read it
+            php_server.port = port
+            # Set the URL in base_url_holder for navigation
             base_url_holder['url'] = php_server.get_base_url()
             _log(f"PHP server started at {php_server.get_base_url()}")
         except Exception as e:
@@ -574,10 +577,18 @@ def main():
         stop_app()
         return
 
-    # 5. Wait briefly for PHP port to bind, then navigate
+    # 5. Wait briefly for PHP to bind its port, then navigate
     def navigate_when_ready():
         import urllib.request
-        url = base_url_holder.get('url') or 'http://127.0.0.1:8282'
+        from desktop import php_server
+
+        # Wait for PHP thread to set the port (max 5s)
+        deadline = time.time() + 5.0
+        while php_server.port is None and time.time() < deadline:
+            time.sleep(0.05)
+
+        url = php_server.get_base_url() or base_url_holder.get('url') or 'http://127.0.0.1:8282'
+
         # Poll health endpoint until PHP is listening (max 5s)
         deadline = time.time() + 5.0
         while time.time() < deadline:

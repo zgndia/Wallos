@@ -15,12 +15,16 @@ import threading
 from datetime import datetime, timedelta
 from pathlib import Path
 
-# Paths
-WALLOS_ROOT = Path(__file__).parent.parent
+# Paths - import from package init to work correctly in PyInstaller bundles
+try:
+    from . import WALLOS_ROOT
+except ImportError:
+    # Fallback when run as script
+    WALLOS_ROOT = Path(__file__).parent.parent
 PHP_EXE = Path(r"C:\Users\zgn\php\php.exe")
 CRONJOBS_DIR = WALLOS_ROOT / "endpoints" / "cronjobs"
 DB_PATH = WALLOS_ROOT / "app" / "db" / "wallos.db"
-LOGS_DIR = Path(__file__).parent / "logs"
+LOGS_DIR = WALLOS_ROOT / "desktop" / "logs"
 LOGS_DIR.mkdir(exist_ok=True)
 
 # Cron job definitions replicated from Wallos crontab
@@ -117,14 +121,10 @@ def _run_php_script(script_name: str) -> bool:
         env["PHP_CLI_SERVER_WORKERS"] = "4"
         env["TZ"] = valid_tz
         
-        # Create temp php.ini override for timezone
-        php_ini_content = f'date.timezone = "{valid_tz}"\n'
-        php_ini_path = WALLOS_ROOT / "desktop" / "temp_php.ini"
-        php_ini_path.write_text(php_ini_content)
-        
+        # Use system php.ini (which has all extensions) + override timezone via -d
+        # This avoids the temp php.ini missing extensions issue
         args = [
             str(PHP_EXE), 
-            "-c", str(php_ini_path),  # Use our temp php.ini
             "-d", f"date.timezone={valid_tz}",
             str(script_path)
         ]
@@ -140,12 +140,6 @@ def _run_php_script(script_name: str) -> bool:
             text=True,
             timeout=120,
         )
-        
-        # Cleanup temp ini
-        try:
-            php_ini_path.unlink()
-        except Exception:
-            pass
 
         if result.returncode == 0:
             _log(f"OK: {script_name} completed successfully")

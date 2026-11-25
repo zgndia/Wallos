@@ -19,8 +19,12 @@ import signal
 import threading
 from pathlib import Path
 
-# Paths
-WALLOS_ROOT = Path(__file__).parent.parent
+# Paths - import from package init to work correctly in PyInstaller bundles
+try:
+    from . import WALLOS_ROOT
+except ImportError:
+    # Fallback when run as script
+    WALLOS_ROOT = Path(__file__).parent.parent
 APP_DIR = WALLOS_ROOT / "app"
 PHP_EXE = Path(r"C:\Users\zgn\php\php.exe")  # portable PHP 8.4.28
 ROUTER = APP_DIR / "router.php"
