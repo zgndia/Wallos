@@ -244,6 +244,7 @@ function ai_complete($aiSettings, $prompt, $db, $i18n, $userId)
             'prompt' => $prompt,
             'stream' => false,
         ]));
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
     } elseif ($type === 'openai-compatible') {
         $headers = ['Content-Type: application/json'];
         if (!empty($apiKey)) {
@@ -258,6 +259,7 @@ function ai_complete($aiSettings, $prompt, $db, $i18n, $userId)
             'stream' => false,
         ]));
         curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 
         if ($ssrf) {
             curl_setopt($ch, CURLOPT_RESOLVE, ["{$ssrf['host']}:{$ssrf['port']}:{$ssrf['ip']}"]);
@@ -268,17 +270,15 @@ function ai_complete($aiSettings, $prompt, $db, $i18n, $userId)
         if ($type === 'chatgpt') {
             $headers[] = 'Authorization: Bearer ' . $apiKey;
             curl_setopt($ch, CURLOPT_URL, 'https://api.openai.com/v1/chat/completions');
+            curl_setopt($ch, CURLOPT_POST, true);
             curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode([
                 'model' => $model,
                 'messages' => [['role' => 'user', 'content' => $prompt]],
             ]));
         } elseif ($type === 'gemini') {
-            curl_setopt(
-                $ch,
-                CURLOPT_URL,
-                'https://generativelanguage.googleapis.com/v1beta/models/' .
-                urlencode($model) . ':generateContent?key=' . urlencode($apiKey)
-            );
+            curl_setopt($ch, CURLOPT_URL, 'https://generativelanguage.googleapis.com/v1beta/models/' .
+                urlencode($model) . ':generateContent?key=' . urlencode($apiKey));
+            curl_setopt($ch, CURLOPT_POST, true);
             curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode([
                 'contents' => [[
                     'parts' => [['text' => $prompt]],
@@ -287,6 +287,7 @@ function ai_complete($aiSettings, $prompt, $db, $i18n, $userId)
         } elseif ($type === 'openrouter') {
             $headers[] = 'Authorization: Bearer ' . $apiKey;
             curl_setopt($ch, CURLOPT_URL, 'https://openrouter.ai/api/v1/chat/completions');
+            curl_setopt($ch, CURLOPT_POST, true);
             curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode([
                 'model' => $model,
                 'messages' => [['role' => 'user', 'content' => $prompt]],
@@ -294,6 +295,7 @@ function ai_complete($aiSettings, $prompt, $db, $i18n, $userId)
         }
 
         curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
     }
 
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);

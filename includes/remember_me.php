@@ -47,20 +47,27 @@ function restoreSessionFromRememberMeCookie($db)
     $adminResult = $db->query($adminQuery);
     $adminRow = $adminResult->fetchArray(SQLITE3_ASSOC);
 
-    if ($adminRow['login_disabled'] == 1) {
-        $sql = "SELECT * FROM login_tokens WHERE user_id = :userId";
-        $stmt = $db->prepare($sql);
-        $stmt->bindParam(':userId', $userId, SQLITE3_TEXT);
-    } else {
-        $sql = "SELECT * FROM login_tokens WHERE user_id = :userId AND token = :token";
-        $stmt = $db->prepare($sql);
-        $stmt->bindParam(':userId', $userId, SQLITE3_TEXT);
-        $stmt->bindParam(':token', $token, SQLITE3_TEXT);
+    // In demo mode (login_disabled = 1), the login.php sets a hardcoded cookie token
+    // "abc123ABC" since no real login is required. Accept this token as valid.
+    if ($adminRow['login_disabled'] == 1 && $token === 'abc123ABC') {
+        session_regenerate_id(true);
+        $_SESSION['username'] = $username;
+        $_SESSION['token'] = $token;
+        $_SESSION['loggedin'] = true;
+        $_SESSION['main_currency'] = $main_currency;
+        $_SESSION['userId'] = $userId;
+        return $userData;
     }
+
+    // Normal token validation for production mode
+    $sql = "SELECT * FROM login_tokens WHERE user_id = :userId AND token = :token";
+    $stmt = $db->prepare($sql);
+    $stmt->bindParam(':userId', $userId, SQLITE3_INTEGER);
+    $stmt->bindParam(':token', $token, SQLITE3_TEXT);
     $result = $stmt->execute();
     $row = $result->fetchArray(SQLITE3_ASSOC);
 
-    if ($row == false) {
+    if ($row === false) {
         return false;
     }
 

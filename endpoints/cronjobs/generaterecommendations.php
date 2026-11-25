@@ -244,6 +244,7 @@ PROMPT;
         if ($type === 'chatgpt') {
             $headers[] = 'Authorization: Bearer ' . $apiKey;
             curl_setopt($ch, CURLOPT_URL, 'https://api.openai.com/v1/chat/completions');
+            curl_setopt($ch, CURLOPT_POST, true);
             curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode([
                 'model'    => $model,
                 'messages' => [['role' => 'user', 'content' => $prompt]],
@@ -253,18 +254,21 @@ PROMPT;
                 'https://generativelanguage.googleapis.com/v1beta/models/' .
                 urlencode($model) . ':generateContent?key=' . urlencode($apiKey)
             );
+            curl_setopt($ch, CURLOPT_POST, true);
             curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode([
                 'contents' => [['parts' => [['text' => $prompt]]]],
             ]));
         } elseif ($type === 'openrouter') {
             $headers[] = 'Authorization: Bearer ' . $apiKey;
             curl_setopt($ch, CURLOPT_URL, 'https://openrouter.ai/api/v1/chat/completions');
+            curl_setopt($ch, CURLOPT_POST, true);
             curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode([
                 'model'    => $model,
                 'messages' => [['role' => 'user', 'content' => $prompt]],
             ]));
         }
         curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
     }
 
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);

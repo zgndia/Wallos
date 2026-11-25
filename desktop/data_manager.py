@@ -21,7 +21,7 @@ except ImportError:
     WALLOS_ROOT = Path(__file__).parent.parent
 DB_PATH = WALLOS_ROOT / "app" / "db" / "wallos.db"
 LOGOS_DIR = WALLOS_ROOT / "app" / "images" / "uploads" / "logos"
-BACKUP_DIR = Path("C:/Users/zgn/wallos-data-backup-20261125-183258")
+BACKUP_DIR = WALLOS_ROOT / "wallos-data-backup-20261125-183258"
 
 # Single-instance lock file
 LOCK_FILE = WALLOS_ROOT / "desktop" / "lock.txt"
