@@ -24,3 +24,20 @@ GEMINI.md
 .github/copilot-instructions.md
 .antigravitycli
 plan.html
+
+# Desktop app runtime files (untracked)
+desktop/webview_profile/
+desktop/logs/
+desktop/backups/
+desktop/lock.txt
+desktop/settings.json
+
+# Build artifacts
+build/
+/dist/
+/*.exe
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class

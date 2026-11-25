@@ -1,0 +1,21 @@
+# Wallos Desktop — Python Dependencies
+
+# Core desktop shell
+pywebview>=4.4.0
+
+# System tray / notifications
+pystray>=0.19.0
+Pillow>=10.0.0
+pywin32>=305
+
+# Process management for single-instance lock
+psutil>=5.9.0
+
+# Rolling log files
+loguru>=0.7.0
+
+# Cryptography for settings persistence
+cryptography>=41.0.0
+
+# Windows toast notifications (optional fallback)
+win10toast>=0.9; sys_platform == "win32"
