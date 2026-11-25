@@ -574,9 +574,23 @@ def main():
         stop_app()
         return
 
-    # 5. Navigate IMMEDIATELY to about:blank + show loading indicator; PHP warms in background
-    def navigate_immediately():
+    # 5. Wait briefly for PHP port to bind, then navigate
+    def navigate_when_ready():
+        import urllib.request
         url = base_url_holder.get('url') or 'http://127.0.0.1:8282'
+        # Poll health endpoint until PHP is listening (max 5s)
+        deadline = time.time() + 5.0
+        while time.time() < deadline:
+            try:
+                req = urllib.request.Request(f"{url}/health.php", method="HEAD")
+                with urllib.request.urlopen(req, timeout=0.5) as resp:
+                    if resp.status == 200:
+                        break
+            except Exception:
+                pass
+            time.sleep(0.1)
+        else:
+            _log("PHP server not ready after 5s, navigating anyway", "WARNING")
         if window:
             try:
                 window.load_url(url)
@@ -585,7 +599,7 @@ def main():
             except Exception as e:
                 _log(f"Navigation failed: {e}", "ERROR")
 
-    threading.Thread(target=navigate_immediately, daemon=True, name="Navigate").start()
+    threading.Thread(target=navigate_when_ready, daemon=True, name="Navigate").start()
 
     # 6. Set up window close handler
     def on_closing():
