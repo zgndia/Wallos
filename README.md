@@ -7,13 +7,24 @@
 
   <p>Wallos: Open-Source Personal Subscription Tracker</p>
 
-  [![Stars](https://img.shields.io/github/stars/ellite/Wallos?style=flat-square)](https://github.com/ellite/Wallos)
+  [![Stars](https://img.shields.io/github/stars/zgndia/Wallos?style=flat-square)](https://github.com/zgndia/Wallos)
   [![Docker](https://img.shields.io/docker/pulls/bellamy/wallos?style=flat-square)](https://hub.docker.com/r/bellamy/wallos)
-  [![GitHub contributors](https://img.shields.io/github/contributors/ellite/Wallos?style=flat-square)](https://github.com/ellite/Wallos/graphs/contributors)
-  [![GitHub Sponsors](https://img.shields.io/github/sponsors/ellite?style=flat-square)](https://github.com/sponsors/ellite)
+  [![GitHub contributors](https://img.shields.io/github/contributors/zgndia/Wallos?style=flat-square)](https://github.com/zgndia/Wallos/graphs/contributors)
+  [![License](https://img.shields.io/github/license/zgndia/Wallos?style=flat-square)](https://github.com/zgndia/Wallos/blob/main/LICENSE.md)
   [![Discord](https://img.shields.io/discord/1237073478910214235?logo=discord&style=flat-square)](https://discord.gg/anex9GUrPW)
 </div>
 
+<details>
+<summary><b>🔧 This is a fork of <a href="https://github.com/ellite/Wallos">ellite/Wallos</a> with critical bug fixes</b></summary>
+
+This fork includes fixes for three important issues:
+
+- **"Stay logged in" toggle** - Fixed token validation for demo mode backdoor
+- **SerpAPI key** - Added schema migration for proper API key storage
+- **AI Recommendations (Gemini, ChatGPT, OpenRouter)** - Fixed missing CURLOPT_POST for API requests
+
+For the original project, see [ellite/Wallos](https://github.com/ellite/Wallos).
+</details>
 
 ## Table of Contents
 
@@ -260,13 +271,15 @@ Setting the `SSRF_ALLOWLIST` environment variable overrides the database value e
 Wallos can ask an AI model for ways to save money on your subscriptions.
 Each user sets it up under Settings, in the AI Recommendations section: enable it, choose a provider, then select **Test** to load the available models, pick one and save.
 
+> **Note:** This fork includes fixes for ChatGPT, Gemini, and OpenRouter providers. If you're experiencing issues with AI recommendations, ensure you're using this fork or the upstream main branch.
+
 | Provider | Needs |
 | --- | --- |
 | ChatGPT | An OpenAI API key |
 | Gemini | A Google AI Studio API key |
 | OpenRouter | An OpenRouter API key |
 | Local Ollama | The Ollama URL, e.g. `http://localhost:11434` |
-| OpenAI Compatible | The API base URL, e.g. `http://localhost:11434/v1`, and an API key if the server requires one |
+| OpenAI Compatible | The API base URL, e.g. `http://localhost:11434/v1`, and an API key if the server requires one
 
 **Generate Recommendations** runs it on demand; the run schedule can also repeat it weekly or monthly.
 Recommendations are based on your active subscriptions and household members, and appear on the dashboard.
@@ -315,3 +328,24 @@ I strongly believe in the importance of open source software and the collaborati
 - The author: [henrique.pt](https://henrique.pt)
 - Wallos Landingpage: [wallosapp.com](https://wallosapp.com)
 - Join the conversation: [Discord Server](https://discord.gg/anex9GUrPW)
+
+## Wallos Desktop (Native App)
+
+This fork includes a native Windows desktop build (`Wallos.exe`) using PyInstaller and pywebview.
+
+### Features
+- Native desktop window with WebView2/Edge backend
+- Bundled PHP server (no separate PHP installation required)
+- System tray integration
+- Automatic rolling backups
+- Single-instance lock
+
+### Download
+The executable is built from `wallos-webview.spec` using PyInstaller. To build locally:
+
+```powershell
+cd C:\Users\zgn\wallos
+pyinstaller wallos-webview.spec --clean
+```
+
+The output is located at `dist/Wallos.exe`. Copy it to your installation directory.
