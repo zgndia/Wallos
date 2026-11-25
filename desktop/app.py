@@ -322,11 +322,15 @@ JS_API_BRIDGE = """
 
 def inject_js_hooks(window):
     """Inject JavaScript hooks for native OS features into the webview window."""
-    try:
-        window.evaluate_js(JS_API_BRIDGE)
-        _log("JS API bridge injected")
-    except Exception as e:
-        _log(f"JS hook injection warning: {e}", "WARNING")
+    # Poll until page has finished loading (avoid 'Unexpected token <' on empty DOM)
+    for _ in range(20):
+        try:
+            window.evaluate_js(JS_API_BRIDGE)
+            _log("JS API bridge injected")
+            return
+        except Exception as e:
+            time.sleep(0.25)
+    _log(f"JS hook injection failed after retries: {e}", "WARNING")
 
 
 # ---- Stop Application ----
