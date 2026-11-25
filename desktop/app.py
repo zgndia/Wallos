@@ -516,24 +516,17 @@ def main():
     _log("Wallos Desktop starting...")
 
     # 1. Start PHP server in background (non-blocking)
-    php_ready = threading.Event()
     base_url_holder = {}
 
     def start_php_background():
         try:
             from desktop import php_server
             port = php_server.start_php_server()
-            # Wait for health with shorter timeout
-            if php_server.wait_until_ready(5.0):
-                base_url_holder['url'] = php_server.get_base_url()
-                _log(f"PHP server ready at {base_url_holder['url']}")
-            else:
-                _log("PHP server health check timeout, proceeding anyway", "WARNING")
-                base_url_holder['url'] = f"http://127.0.0.1:{port}"
+            # Start health check thread in php_server (non-blocking); we don't block here
+            base_url_holder['url'] = php_server.get_base_url()
+            _log(f"PHP server started at {php_server.get_base_url()}")
         except Exception as e:
             _log(f"PHP server start failed: {e}", "ERROR")
-        finally:
-            php_ready.set()
 
     php_thread = threading.Thread(target=start_php_background, daemon=True, name="PHPStartup")
     php_thread.start()
@@ -577,21 +570,18 @@ def main():
         stop_app()
         return
 
-    # 5. Wait for PHP server and navigate (with timeout)
-    def navigate_when_ready():
-        php_ready.wait(timeout=10.0)  # Max 10s wait
-        url = base_url_holder.get('url', 'http://127.0.0.1:8282')
+    # 5. Navigate IMMEDIATELY to about:blank + show loading indicator; PHP warms in background
+    def navigate_immediately():
+        url = base_url_holder.get('url') or 'http://127.0.0.1:8282'
         if window:
             try:
                 window.load_url(url)
                 _log(f"Navigated to {url}")
-                # Inject JS hooks after navigation
-                time.sleep(0.5)
                 inject_js_hooks(window)
             except Exception as e:
                 _log(f"Navigation failed: {e}", "ERROR")
 
-    threading.Thread(target=navigate_when_ready, daemon=True, name="Navigating").start()
+    threading.Thread(target=navigate_immediately, daemon=True, name="Navigate").start()
 
     # 6. Set up window close handler
     def on_closing():

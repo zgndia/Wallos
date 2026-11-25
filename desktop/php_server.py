@@ -129,7 +129,7 @@ def start_php_server(port_override: int = None) -> int:
         creationflags = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
 
         php_process = subprocess.Popen(
-            [str(PHP_EXE), "-S", f"127.0.0.1:{port}", "-t", str(APP_DIR), str(ROUTER)],
+            [str(PHP_EXE), "-S", f"127.0.0.1:{port}", "-t", str(WALLOS_ROOT), str(ROUTER)],
             cwd=str(WALLOS_ROOT),
             env=env,
             creationflags=creationflags,

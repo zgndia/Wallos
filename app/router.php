@@ -1,43 +1,43 @@
 <?php
 // Wallos PHP built-in server router
-// Replicates nginx try_files + security deny rules from nginx.conf / nginx.default.conf
+// Serves from WALLOS_ROOT with security rules matching nginx.conf / nginx.default.conf
+// __DIR__ is the app/ folder; WALLOS_ROOT is one level up
 
-$uri = $_SERVER['REQUEST_URI'];
-$path = __DIR__ . DIRECTORY_SEPARATOR . ltrim($uri, '/');
+$uri   = $_SERVER['REQUEST_URI'] ?? '/';
+$root  = dirname(__DIR__);          // WALLOS_ROOT (parent of app/)
+$path  = $root . DIRECTORY_SEPARATOR . ltrim($uri, '/');
 
-// Deny direct .db access
-if (preg_match('/\.db$/i', $uri)) {
+// Security: block .db access anywhere
+if (preg_match('/\.db$/i', $path)) {
     http_response_code(403);
     die('Forbidden');
 }
 
-// Deny PHP execution inside logos uploads dir
-if (preg_match('#^/images/uploads/logos/.*\.php$#i', $uri)) {
+// Security: block PHP in logo uploads
+if (stripos($uri, '/images/uploads/logos/') !== false && preg_match('/\.php$/i', $uri)) {
     http_response_code(403);
     die('Forbidden');
 }
 
-// Deny .tmp/ directory entirely
+// Security: block .tmp/ entirely
 if (strpos($uri, '/.tmp/') === 0 || strpos($uri, '/.tmp\\') === 0) {
     http_response_code(403);
     die('Forbidden');
 }
 
-// Deny includes/*.php
+// Security: block direct access to includes/*.php
 if (preg_match('#^/includes/.*\.php$#i', $uri)) {
     http_response_code(403);
     die('Forbidden');
 }
 
-// try_files behaviour:
-// 1. Serve the file if it exists on disk
-// 2. Fall back to index.php with query string
-if (is_file($path) && !$uri === '/') {
-    // Let PHP serve it natively
+// try_files logic:
+// If request is a real file/directory on disk, let PHP serve it natively
+if (is_file($path)) {
     return false;
 }
 
-// Route all other requests through index.php (frontend router)
+// Fall back to index.php for all other requests (frontend router)
 $_SERVER['SCRIPT_NAME'] = '/index.php';
 $_SERVER['PHP_SELF']    = '/index.php';
 return false;
